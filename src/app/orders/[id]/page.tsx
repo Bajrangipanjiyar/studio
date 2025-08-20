@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { ArrowLeft, FilePenLine } from "lucide-react";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -41,7 +42,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { orders as mockOrders } from "@/lib/mock-data";
+import { db } from "@/lib/firebase";
 import type { Order } from "@/lib/types";
 
 const orderFormSchema = z.object({
@@ -71,32 +72,56 @@ export default function OrderDetailsPage() {
   });
 
   useEffect(() => {
-    const orderId = params.id as string;
-    const foundOrder = mockOrders.find((o) => o.id === orderId);
-    if (foundOrder) {
-      setOrder(foundOrder);
-      form.reset({
-        customerName: foundOrder.customerName,
-        phone: foundOrder.phone,
-        address: foundOrder.address,
-        status: foundOrder.status,
-      });
-    } else {
-      toast({ variant: "destructive", title: "Order not found" });
-      router.push("/orders");
-    }
+    const fetchOrder = async () => {
+      const orderId = params.id as string;
+      if (!orderId) return;
+
+      try {
+        const docRef = doc(db, "orders", orderId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const orderData = { id: docSnap.id, ...docSnap.data() } as Order;
+          setOrder(orderData);
+          form.reset({
+            customerName: orderData.customerName,
+            phone: orderData.phone,
+            address: orderData.address,
+            status: orderData.status,
+          });
+        } else {
+          toast({ variant: "destructive", title: "Order not found" });
+          router.push("/orders");
+        }
+      } catch (error) {
+        console.error("Error fetching order:", error);
+        toast({ variant: "destructive", title: "Failed to fetch order details" });
+        router.push("/orders");
+      }
+    };
+
+    fetchOrder();
   }, [params.id, router, toast, form]);
 
-  function onSubmit(data: OrderFormValues) {
-    console.log("Updated order data:", data);
-    toast({
-      title: "Order Updated",
-      description: `Order #${order?.id.slice(0, 6)} has been updated.`,
-    });
-    if (order) {
+  async function onSubmit(data: OrderFormValues) {
+    if (!order) return;
+    try {
+        const orderRef = doc(db, 'orders', order.id);
+        await updateDoc(orderRef, data);
         setOrder({ ...order, ...data });
+        setIsEditing(false);
+        toast({
+            title: "Order Updated",
+            description: `Order #${order.id.slice(0, 6)} has been updated.`,
+        });
+    } catch (error) {
+        console.error("Error updating order: ", error);
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: "Could not update the order in the database.",
+        });
     }
-    setIsEditing(false);
   }
 
   if (!order) {

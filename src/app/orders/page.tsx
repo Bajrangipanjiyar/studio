@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,27 +22,45 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-
-import { orders as mockOrders } from "@/lib/mock-data";
+import { db } from "@/lib/firebase";
 import type { Order } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
+
 
 export default function OrdersPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setOrders(mockOrders);
-  }, []);
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const q = searchQuery 
+          ? query(collection(db, "orders"), where("phone", ">=", searchQuery), where("phone", "<=", searchQuery + '\uf8ff'))
+          : collection(db, "orders");
+        const querySnapshot = await getDocs(q);
+        const ordersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+        setOrders(ordersData);
+      } catch (error) {
+        console.error("Error fetching orders: ", error);
+        toast({
+            variant: "destructive",
+            title: "Failed to fetch orders",
+            description: "Could not retrieve orders from the database.",
+        });
+      }
+      setLoading(false);
+    };
 
-  const filteredOrders = useMemo(() => {
-    if (!searchQuery) {
-      return orders;
-    }
-    return orders.filter((order) =>
-      order.phone.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [orders, searchQuery]);
+    const debounceTimer = setTimeout(() => {
+        fetchOrders();
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, toast]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -82,8 +101,14 @@ export default function OrdersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredOrders.length > 0 ? (
-                filteredOrders.map((order) => (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    Loading orders...
+                  </TableCell>
+                </TableRow>
+              ) : orders.length > 0 ? (
+                orders.map((order) => (
                   <TableRow
                     key={order.id}
                     className="cursor-pointer"
