@@ -271,7 +271,7 @@ export default function OrderDetailsPage() {
                         </div>
                         <div>
                             <p className="font-medium">Total</p>
-                            <p className="font-bold text-foreground">${order.total.toFixed(2)}</p>
+                            <p className="font-bold text-foreground">{typeof order.total === 'number' ? `$${order.total.toFixed(2)}` : 'N/A'}</p>
                         </div>
                     </div>
                     <h3 className="font-semibold mb-2">Items</h3>
