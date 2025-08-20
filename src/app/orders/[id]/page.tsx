@@ -284,7 +284,7 @@ export default function OrderDetailsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {order.items.map(item => (
+                            {order.items && order.items.map(item => (
                                 <TableRow key={item.id}>
                                     <TableCell>{item.name}</TableCell>
                                     <TableCell className="text-center">{item.quantity}</TableCell>
