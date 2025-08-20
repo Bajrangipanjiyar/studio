@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { ArrowLeft, FilePenLine } from "lucide-react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, Timestamp } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -33,14 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
 import type { Order } from "@/lib/types";
@@ -49,7 +41,7 @@ const orderFormSchema = z.object({
   customerName: z.string().min(2, "Name must be at least 2 characters."),
   phone: z.string().min(10, "Phone number must be at least 10 digits."),
   address: z.string().min(5, "Address must be at least 5 characters."),
-  status: z.enum(["Pending", "Shipped", "Delivered", "Cancelled"]),
+  status: z.enum(["confirmed", "Pending", "Shipped", "Delivered", "Cancelled"]),
 });
 
 type OrderFormValues = z.infer<typeof orderFormSchema>;
@@ -81,7 +73,21 @@ export default function OrderDetailsPage() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const orderData = { id: docSnap.id, ...docSnap.data() } as Order;
+          const data = docSnap.data();
+          const orderDate = data.date instanceof Timestamp ? data.date.toDate() : new Date();
+
+          const orderData = { 
+            id: docSnap.id,
+            customerName: data.userName || 'N/A',
+            phone: data.userPhone || 'N/A',
+            address: data.address || 'N/A',
+            status: data.status || 'Pending',
+            total: Number(data.price) || 0,
+            orderDate: orderDate.toISOString(),
+            carType: data.carType || 'N/A',
+            timeSlot: data.timeSlot || 'N/A',
+          } as Order;
+
           setOrder(orderData);
           form.reset({
             customerName: orderData.customerName,
@@ -107,7 +113,13 @@ export default function OrderDetailsPage() {
     if (!order) return;
     try {
         const orderRef = doc(db, 'bookings', order.id);
-        await updateDoc(orderRef, data);
+        const updateData = {
+          userName: data.customerName,
+          userPhone: data.phone,
+          address: data.address,
+          status: data.status
+        };
+        await updateDoc(orderRef, updateData);
         setOrder({ ...order, ...data });
         setIsEditing(false);
         toast({
@@ -215,6 +227,7 @@ export default function OrderDetailsPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
+                            <SelectItem value="confirmed">Confirmed</SelectItem>
                             <SelectItem value="Pending">Pending</SelectItem>
                             <SelectItem value="Shipped">Shipped</SelectItem>
                             <SelectItem value="Delivered">Delivered</SelectItem>
@@ -273,26 +286,15 @@ export default function OrderDetailsPage() {
                             <p className="font-medium">Total</p>
                             <p className="font-bold text-foreground">{typeof order.total === 'number' ? `$${order.total.toFixed(2)}` : 'N/A'}</p>
                         </div>
+                        <div>
+                            <p className="font-medium">Car Type</p>
+                            <p className="text-muted-foreground">{order.carType}</p>
+                        </div>
+                        <div>
+                            <p className="font-medium">Time Slot</p>
+                            <p className="text-muted-foreground">{order.timeSlot}</p>
+                        </div>
                     </div>
-                    <h3 className="font-semibold mb-2">Items</h3>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Product</TableHead>
-                                <TableHead className="text-center">Quantity</TableHead>
-                                <TableHead className="text-right">Price</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {order.items && order.items.map(item => (
-                                <TableRow key={item.id}>
-                                    <TableCell>{item.name}</TableCell>
-                                    <TableCell className="text-center">{item.quantity}</TableCell>
-                                    <TableCell className="text-right">${(item.price * item.quantity).toFixed(2)}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
                 </CardContent>
             </Card>
         </div>

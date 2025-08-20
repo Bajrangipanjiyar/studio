@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, Timestamp } from "firebase/firestore";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -39,10 +39,24 @@ export default function OrdersPage() {
       setLoading(true);
       try {
         const q = searchQuery 
-          ? query(collection(db, "bookings"), where("phone", ">=", searchQuery), where("phone", "<=", searchQuery + '\uf8ff'))
+          ? query(collection(db, "bookings"), where("userPhone", ">=", searchQuery), where("userPhone", "<=", searchQuery + '\uf8ff'))
           : collection(db, "bookings");
         const querySnapshot = await getDocs(q);
-        const ordersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+        const ordersData = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          const orderDate = data.date instanceof Timestamp ? data.date.toDate() : new Date();
+          return { 
+            id: doc.id,
+            customerName: data.userName || 'N/A',
+            phone: data.userPhone || 'N/A',
+            address: data.address || 'N/A',
+            status: data.status || 'Pending',
+            total: Number(data.price) || 0,
+            orderDate: orderDate.toISOString(),
+            carType: data.carType || 'N/A',
+            timeSlot: data.timeSlot || 'N/A',
+          } as Order
+        });
         setOrders(ordersData);
       } catch (error) {
         console.error("Error fetching orders: ", error);
@@ -61,6 +75,21 @@ export default function OrdersPage() {
 
     return () => clearTimeout(debounceTimer);
   }, [searchQuery, toast]);
+
+  const getStatusVariant = (status: Order['status']) => {
+    switch (status) {
+      case 'Delivered':
+      case 'confirmed':
+        return 'default';
+      case 'Shipped':
+        return 'secondary';
+      case 'Cancelled':
+        return 'destructive';
+      case 'Pending':
+      default:
+        return 'outline';
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -117,11 +146,7 @@ export default function OrdersPage() {
                     <TableCell className="font-medium">#{order.id.slice(0, 6)}</TableCell>
                     <TableCell>{order.customerName}</TableCell>
                     <TableCell>
-                       <Badge variant={
-                        order.status === 'Delivered' ? 'default' :
-                        order.status === 'Shipped' ? 'secondary' :
-                        order.status === 'Cancelled' ? 'destructive' : 'outline'
-                      }>
+                       <Badge variant={getStatusVariant(order.status)}>
                         {order.status}
                       </Badge>
                     </TableCell>
