@@ -126,10 +126,10 @@ export default function OrdersPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      ${order.total.toFixed(2)}
+                      {typeof order.total === 'number' ? `$${order.total.toFixed(2)}` : 'N/A'}
                     </TableCell>
                     <TableCell className="text-right">
-                      {new Date(order.orderDate).toLocaleDateString()}
+                      {order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A'}
                     </TableCell>
                   </TableRow>
                 ))
