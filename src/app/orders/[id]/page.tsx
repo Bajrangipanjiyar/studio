@@ -77,7 +77,7 @@ export default function OrderDetailsPage() {
       if (!orderId) return;
 
       try {
-        const docRef = doc(db, "orders", orderId);
+        const docRef = doc(db, "bookings", orderId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -106,7 +106,7 @@ export default function OrderDetailsPage() {
   async function onSubmit(data: OrderFormValues) {
     if (!order) return;
     try {
-        const orderRef = doc(db, 'orders', order.id);
+        const orderRef = doc(db, 'bookings', order.id);
         await updateDoc(orderRef, data);
         setOrder({ ...order, ...data });
         setIsEditing(false);

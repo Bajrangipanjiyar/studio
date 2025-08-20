@@ -39,8 +39,8 @@ export default function OrdersPage() {
       setLoading(true);
       try {
         const q = searchQuery 
-          ? query(collection(db, "orders"), where("phone", ">=", searchQuery), where("phone", "<=", searchQuery + '\uf8ff'))
-          : collection(db, "orders");
+          ? query(collection(db, "bookings"), where("phone", ">=", searchQuery), where("phone", "<=", searchQuery + '\uf8ff'))
+          : collection(db, "bookings");
         const querySnapshot = await getDocs(q);
         const ordersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
         setOrders(ordersData);
