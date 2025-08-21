@@ -230,7 +230,7 @@ export default function OrderDetailsPage() {
                             <SelectItem value="confirmed">Confirmed</SelectItem>
                             <SelectItem value="running">Running</SelectItem>
                             <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                            <SelectItem value="cancelled" className="text-destructive focus:text-destructive">Cancelled</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
