@@ -50,7 +50,7 @@ export default function OrdersPage() {
             customerName: data.userName || 'N/A',
             phone: data.userPhone || 'N/A',
             address: data.address || 'N/A',
-            status: data.status || 'Pending',
+            status: data.status || 'pending',
             total: Number(data.price) || 0,
             orderDate: orderDate.toISOString(),
             carType: data.carType || 'N/A',
@@ -78,14 +78,13 @@ export default function OrdersPage() {
 
   const getStatusVariant = (status: Order['status']) => {
     switch (status) {
-      case 'Delivered':
       case 'confirmed':
         return 'default';
-      case 'Shipped':
+      case 'running':
         return 'secondary';
-      case 'Cancelled':
+      case 'cancelled':
         return 'destructive';
-      case 'Pending':
+      case 'pending':
       default:
         return 'outline';
     }
@@ -146,7 +145,7 @@ export default function OrdersPage() {
                     <TableCell className="font-medium">#{order.id.slice(0, 6)}</TableCell>
                     <TableCell>{order.customerName}</TableCell>
                     <TableCell>
-                       <Badge variant={getStatusVariant(order.status)}>
+                       <Badge variant={getStatusVariant(order.status)} className="capitalize">
                         {order.status}
                       </Badge>
                     </TableCell>

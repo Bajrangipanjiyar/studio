@@ -41,7 +41,7 @@ const orderFormSchema = z.object({
   customerName: z.string().min(2, "Name must be at least 2 characters."),
   phone: z.string().min(10, "Phone number must be at least 10 digits."),
   address: z.string().min(5, "Address must be at least 5 characters."),
-  status: z.enum(["confirmed", "Pending", "Shipped", "Delivered", "Cancelled"]),
+  status: z.enum(["confirmed", "running", "pending", "cancelled"]),
 });
 
 type OrderFormValues = z.infer<typeof orderFormSchema>;
@@ -59,7 +59,7 @@ export default function OrderDetailsPage() {
       customerName: "",
       phone: "",
       address: "",
-      status: "Pending",
+      status: "pending",
     },
   });
 
@@ -81,7 +81,7 @@ export default function OrderDetailsPage() {
             customerName: data.userName || 'N/A',
             phone: data.userPhone || 'N/A',
             address: data.address || 'N/A',
-            status: data.status || 'Pending',
+            status: data.status || 'pending',
             total: Number(data.price) || 0,
             orderDate: orderDate.toISOString(),
             carType: data.carType || 'N/A',
@@ -228,10 +228,9 @@ export default function OrderDetailsPage() {
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="confirmed">Confirmed</SelectItem>
-                            <SelectItem value="Pending">Pending</SelectItem>
-                            <SelectItem value="Shipped">Shipped</SelectItem>
-                            <SelectItem value="Delivered">Delivered</SelectItem>
-                            <SelectItem value="Cancelled">Cancelled</SelectItem>
+                            <SelectItem value="running">Running</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -280,7 +279,7 @@ export default function OrderDetailsPage() {
                         </div>
                         <div>
                             <p className="font-medium">Status</p>
-                            <p className="text-muted-foreground">{order.status}</p>
+                            <p className="text-muted-foreground capitalize">{order.status}</p>
                         </div>
                         <div>
                             <p className="font-medium">Total</p>
