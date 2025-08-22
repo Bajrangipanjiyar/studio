@@ -55,6 +55,7 @@ export default function OrdersPage() {
             orderDate: orderDate.toISOString(),
             carType: data.carType || 'N/A',
             timeSlot: data.timeSlot || 'N/A',
+            paymentMethod: data.paymentMethod || 'N/A'
           } as Order
         });
         setOrders(ordersData);
@@ -78,6 +79,7 @@ export default function OrdersPage() {
 
   const getStatusVariant = (status: Order['status']) => {
     switch (status) {
+      case 'completed':
       case 'confirmed':
         return 'default';
       case 'running':

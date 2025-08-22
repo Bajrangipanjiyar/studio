@@ -36,12 +36,13 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
 import type { Order } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const orderFormSchema = z.object({
   customerName: z.string().min(2, "Name must be at least 2 characters."),
   phone: z.string().min(10, "Phone number must be at least 10 digits."),
   address: z.string().min(5, "Address must be at least 5 characters."),
-  status: z.enum(["confirmed", "running", "pending", "cancelled"]),
+  status: z.enum(["confirmed", "running", "pending", "cancelled", "completed"]),
 });
 
 type OrderFormValues = z.infer<typeof orderFormSchema>;
@@ -86,6 +87,7 @@ export default function OrderDetailsPage() {
             orderDate: orderDate.toISOString(),
             carType: data.carType || 'N/A',
             timeSlot: data.timeSlot || 'N/A',
+            paymentMethod: data.paymentMethod || 'N/A',
           } as Order;
 
           setOrder(orderData);
@@ -227,10 +229,11 @@ export default function OrderDetailsPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
                             <SelectItem value="confirmed">Confirmed</SelectItem>
                             <SelectItem value="running">Running</SelectItem>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="cancelled" className="text-destructive focus:text-destructive">Cancelled</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="cancelled" className={cn("text-destructive focus:text-destructive")}>Cancelled</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -292,6 +295,10 @@ export default function OrderDetailsPage() {
                         <div>
                             <p className="font-medium">Time Slot</p>
                             <p className="text-muted-foreground">{order.timeSlot}</p>
+                        </div>
+                         <div>
+                            <p className="font-medium">Payment Method</p>
+                            <p className="text-muted-foreground capitalize">{order.paymentMethod}</p>
                         </div>
                     </div>
                 </CardContent>

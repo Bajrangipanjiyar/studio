@@ -34,7 +34,7 @@ export default function LoginPage() {
           title: "Login Successful",
           description: "Welcome back, Bajrangi!",
         });
-        router.push("/orders");
+        router.push("/dashboard");
       } else {
         toast({
           variant: "destructive",

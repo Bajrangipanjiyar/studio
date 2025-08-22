@@ -1,12 +1,13 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   CircleUser,
   LogOut,
   ShoppingCart,
   Menu,
+  LayoutDashboard,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -21,19 +22,26 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from '@/components/Logo';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
-export default function DashboardLayout({
+export default function AuthedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { toast } = useToast();
 
   const handleLogout = () => {
     toast({ description: "You have been logged out." });
     router.push('/');
   };
+
+  const navLinks = [
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/orders', label: 'Orders', icon: ShoppingCart },
+  ];
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -44,13 +52,19 @@ export default function DashboardLayout({
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              <Link
-                href="/orders"
-                className="flex items-center gap-3 rounded-lg bg-muted px-3 py-2 text-primary transition-all hover:text-primary"
-              >
-                <ShoppingCart className="h-4 w-4" />
-                Orders
-              </Link>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:text-primary",
+                    (pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href))) && "bg-muted"
+                  )}
+                >
+                  <link.icon className="h-4 w-4" />
+                  {link.label}
+                </Link>
+              ))}
             </nav>
           </div>
         </div>
@@ -73,13 +87,19 @@ export default function DashboardLayout({
                 <div className="mb-4">
                   <Logo />
                 </div>
-                <Link
-                  href="/orders"
-                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl bg-muted px-3 py-2 text-foreground hover:text-foreground"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  Orders
-                </Link>
+                 {navLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={cn(
+                        "mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-foreground hover:text-foreground",
+                         (pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href))) && "bg-muted"
+                      )}
+                    >
+                      <link.icon className="h-5 w-5" />
+                      {link.label}
+                    </Link>
+                  ))}
               </nav>
             </SheetContent>
           </Sheet>

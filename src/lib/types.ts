@@ -3,9 +3,10 @@ export interface Order {
   customerName: string;
   phone: string;
   address: string;
-  status: 'confirmed' | 'running' | 'pending' | 'cancelled';
+  status: 'confirmed' | 'running' | 'pending' | 'cancelled' | 'completed';
   total: number;
   orderDate: string; // Keep as string for display
   carType: string;
   timeSlot: string;
+  paymentMethod: string;
 }
