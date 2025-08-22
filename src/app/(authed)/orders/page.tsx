@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { db } from "@/lib/firebase";
 import type { Order } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 export default function OrdersPage() {
@@ -80,6 +81,7 @@ export default function OrdersPage() {
   const getStatusVariant = (status: Order['status']) => {
     switch (status) {
       case 'completed':
+        return 'success';
       case 'confirmed':
         return 'default';
       case 'running':
@@ -132,11 +134,15 @@ export default function OrdersPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center">
-                    Loading orders...
-                  </TableCell>
-                </TableRow>
+                 Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={index}>
+                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-5 w-16" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-5 w-24" /></TableCell>
+                  </TableRow>
+                ))
               ) : orders.length > 0 ? (
                 orders.map((order) => (
                   <TableRow
