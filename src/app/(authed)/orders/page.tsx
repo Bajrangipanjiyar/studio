@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { collection, getDocs, query, where, Timestamp } from "firebase/firestore";
+import { collection, getDocs, query, where, Timestamp, orderBy } from "firebase/firestore";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -39,9 +40,21 @@ export default function OrdersPage() {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const q = searchQuery 
-          ? query(collection(db, "bookings"), where("userPhone", ">=", searchQuery), where("userPhone", "<=", searchQuery + '\uf8ff'))
-          : collection(db, "bookings");
+        const bookingsCollection = collection(db, "bookings");
+        let q;
+
+        if (searchQuery) {
+          q = query(
+            bookingsCollection,
+            where("userPhone", ">=", searchQuery),
+            where("userPhone", "<=", searchQuery + '\uf8ff'),
+            orderBy("userPhone"),
+            orderBy("createdAt", "desc")
+          );
+        } else {
+          q = query(bookingsCollection, orderBy("createdAt", "desc"));
+        }
+        
         const querySnapshot = await getDocs(q);
         const ordersData = querySnapshot.docs.map(doc => {
           const data = doc.data();
@@ -65,7 +78,7 @@ export default function OrdersPage() {
         toast({
             variant: "destructive",
             title: "Failed to fetch orders",
-            description: "Could not retrieve orders from the database.",
+            description: "Could not retrieve orders from the database. You may need to create a Firestore index.",
         });
       }
       setLoading(false);
