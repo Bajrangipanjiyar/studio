@@ -39,8 +39,8 @@ export default function AuthedLayout({
   };
 
   const navLinks = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/orders', label: 'Orders', icon: ShoppingCart },
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ];
 
   return (
