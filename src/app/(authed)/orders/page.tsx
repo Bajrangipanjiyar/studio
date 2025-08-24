@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { collection, getDocs, query, where, Timestamp, orderBy } from "firebase/firestore";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -27,6 +27,7 @@ import { db } from "@/lib/firebase";
 import type { Order } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { VariantProps } from "class-variance-authority";
 
 
 export default function OrdersPage() {
@@ -91,7 +92,7 @@ export default function OrdersPage() {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery, toast]);
 
-  const getStatusVariant = (status: Order['status']) => {
+  const getStatusVariant = (status: Order['status']): VariantProps<typeof badgeVariants>["variant"] => {
     switch (status) {
       case 'completed':
         return 'success';
@@ -141,8 +142,8 @@ export default function OrdersPage() {
                 <TableHead>Order ID</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-right">Date</TableHead>
+                <TableHead className="hidden sm:table-cell text-right">Total</TableHead>
+                <TableHead className="hidden sm:table-cell text-right">Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -152,8 +153,8 @@ export default function OrdersPage() {
                     <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                     <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-5 w-16" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell className="hidden sm:table-cell text-right"><Skeleton className="h-5 w-16" /></TableCell>
+                    <TableCell className="hidden sm:table-cell text-right"><Skeleton className="h-5 w-24" /></TableCell>
                   </TableRow>
                 ))
               ) : orders.length > 0 ? (
@@ -170,10 +171,10 @@ export default function OrdersPage() {
                         {order.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="hidden sm:table-cell text-right">
                       {typeof order.total === 'number' ? `₹${order.total.toFixed(2)}` : 'N/A'}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="hidden sm:table-cell text-right">
                       {order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A'}
                     </TableCell>
                   </TableRow>
